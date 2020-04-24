@@ -1,0 +1,40 @@
+﻿box: microsoft/dotnet:1.1.1-sdk
+no-response-timeout: 10
+build:
+  steps:
+    # Sets the go workspace and places you package
+    # at the right place in the workspace tree
+    - setup-go-workspace
+
+    # Gets the dependencies
+    - script:
+        name: restore
+        code: |
+          dotnet restore
+    # Build the project
+    - script:
+        name: build
+        code: |
+          dotnet build
+    # Test the project
+    - script:
+        name: publish
+        code: |
+          dotnet publish -o publish
+    - script:
+        name: copy binary
+        code: |
+          cp -r . $WERCKER_OUTPUT_DIR/app
+          cd $WERCKER_OUTPUT_DIR/app
+deploy: 
+  steps:
+    - internal/docker-push:
+        username: $USERNAME
+        password: $PASSWORD 
+        repository: /dotnetcoreservices/hello-world
+        registry: https://registry.hub.docker.com
+        entrypoint: "/pipeline/source/app/docker_entrypoint.sh"
+
+
+box: microsoft/dotnet:3.1-sdk
+no-response-timeout: 10
